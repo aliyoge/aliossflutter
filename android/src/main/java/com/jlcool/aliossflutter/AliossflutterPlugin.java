@@ -93,6 +93,9 @@ public class AliossflutterPlugin implements MethodCallHandler {
             case "init":
                 init();
                 break;
+            case "initWithSecret":
+                initWithSecret();
+                break;
             case "signurl":
                 signUrl(call);
                 break;
@@ -112,6 +115,43 @@ public class AliossflutterPlugin implements MethodCallHandler {
                 result.notImplemented();
                 break;
         }
+    }
+
+    private void initWithSecret() {
+        endpoint = _call.argument("endpoint");
+        final String key = _call.argument("key");
+        final String secret = _call.argument("secret");
+        final String _id = _call.argument("id");
+
+        final OSSCredentialProvider credentialProvider = new OSSCustomSignerCredentialProvider() {
+            @Override
+            public String signContent(String content) {
+            // 您需要在这里依照OSS规定的签名算法，实现加签一串字符内容，并把得到的签名传拼接上AccessKeyId后返回
+                // 一般实现是，将字符内容post到您的业务服务器，然后返回签名
+                // 如果因为某种原因加签失败，描述error信息后，返回nil
+                
+                // 以下是用本地算法进行的演示
+                return "OSS " + key + ":" + base64(hmac-sha1(secret, content));
+            }
+        };
+
+        final ClientConfiguration conf = new ClientConfiguration();
+        conf.setConnectionTimeout(15 * 1000); // 连接超时时间，默认15秒
+        conf.setSocketTimeout(15 * 1000); // Socket超时时间，默认15秒
+        conf.setMaxConcurrentRequest(5); // 最大并发请求数，默认5个
+        conf.setMaxErrorRetry(2); // 失败后最大重试次数，默认2次
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                oss = new OSSClient(registrar.context(), endpoint, credentialProvider, conf);
+                Map<String, String> m1 = new HashMap();
+                m1.put("result", "success");
+                m1.put("id", _id);
+                channel.invokeMethod("onInit", m1);
+            }
+        }).start();
+
+
     }
 
     private void init() {

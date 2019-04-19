@@ -21,29 +21,50 @@ OSSClient *oss ;
     
     if ([@"init" isEqualToString:call.method]) {
         [self init:call result:result];
-        return;
-    }else if ([@"upload" isEqualToString:call.method]) {
+    } else if ([@"initWithSecret" isEqualToString:call.method]) {
+        [self initWithSecret:call result:result];
+    } else if ([@"upload" isEqualToString:call.method]) {
         [self update:call result:result];
-        return;
-    }
-    else if ([@"download" isEqualToString:call.method]) {
+    } else if ([@"download" isEqualToString:call.method]) {
         [self download:call result:result];
-        return;
-    }else if ([@"signurl" isEqualToString:call.method]) {
+    } else if ([@"signurl" isEqualToString:call.method]) {
         [self signUrl:call result:result];
-        return;
-    }else if ([@"des" isEqualToString:call.method]) {
+    } else if ([@"des" isEqualToString:call.method]) {
         [self des:call result:result];
-        return;
-    }else if ([@"delete" isEqualToString:call.method]) {
+    } else if ([@"delete" isEqualToString:call.method]) {
         [self delete:call result:result];
-        return;
-    }else if ([@"doesObjectExist" isEqualToString:call.method]) {
+    } else if ([@"doesObjectExist" isEqualToString:call.method]) {
         [self doesObjectExist:call result:result];
-        return;
-    }else {
+    } else {
         result(FlutterMethodNotImplemented);
     }
+}
+- (void)initWithSecret:(FlutterMethodCall*)call result:(FlutterResult)result {
+    
+    endpoint = call.arguments[@"endpoint"];
+    NSString *key =call.arguments[@"key"];
+    NSString *secret =call.arguments[@"secret"];
+    NSString *_id =call.arguments[@"id"];
+
+    id<OSSCredentialProvider> credential = [[OSSCustomSignerCredentialProvider alloc] initWithImplementedSigner:^NSString *(NSString *contentToSign, NSError *__autoreleasing *error) {
+        // 您需要在这里依照OSS规定的签名算法，实现加签一串字符内容，并把得到的签名传拼接上AccessKeyId后返回
+        // 一般实现是，将字符内容post到您的业务服务器，然后返回签名
+        // 如果因为某种原因加签失败，描述error信息后，返回nil
+        NSString *signature = [OSSUtil calBase64Sha1WithData:contentToSign withSecret: secret]; // 这里是用SDK内的工具函数进行本地加签，建议您通过业务server实现远程加签
+        if (signature != nil) {
+            *error = nil;
+        } else {
+            *error = [NSError errorWithDomain:@"<your domain>" code:-1001 userInfo:@"<your error info>"];
+            return nil;
+        }
+        return [NSString stringWithFormat:@"OSS %@:%@", key, signature];
+    }];
+    oss = [[OSSClient alloc] initWithEndpoint:endpoint credentialProvider:credential1];
+    NSDictionary *m1 = @{
+                         @"result": @"success",
+                         @"id":_id
+                         };
+    [channel invokeMethod:@"onInit" arguments:m1];
 }
 - (void)init:(FlutterMethodCall*)call result:(FlutterResult)result {
     
