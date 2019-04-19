@@ -54,12 +54,12 @@ OSSClient *oss ;
         if (signature != nil) {
             *error = nil;
         } else {
-            *error = [NSError errorWithDomain:@"<your domain>" code:-1001 userInfo:@"<your error info>"];
+            *error = [NSError errorWithDomain:@"<your domain>" code:-1001 userInfo:nil];
             return nil;
         }
         return [NSString stringWithFormat:@"OSS %@:%@", key, signature];
     }];
-    oss = [[OSSClient alloc] initWithEndpoint:endpoint credentialProvider:credential1];
+    oss = [[OSSClient alloc] initWithEndpoint:endpoint credentialProvider:credential];
     NSDictionary *m1 = @{
                          @"result": @"success",
                          @"id":_id
