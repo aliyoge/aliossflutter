@@ -13,6 +13,7 @@ import com.alibaba.sdk.android.oss.common.OSSConstants;
 import com.alibaba.sdk.android.oss.common.OSSLog;
 import com.alibaba.sdk.android.oss.common.auth.OSSAuthCredentialsProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSCredentialProvider;
+import com.alibaba.sdk.android.oss.common.auth.OSSCustomSignerCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSFederationCredentialProvider;
 import com.alibaba.sdk.android.oss.common.auth.OSSFederationToken;
 import com.alibaba.sdk.android.oss.common.utils.IOUtils;
@@ -131,7 +132,7 @@ public class AliossflutterPlugin implements MethodCallHandler {
                 // 如果因为某种原因加签失败，描述error信息后，返回nil
                 
                 // 以下是用本地算法进行的演示
-                return "OSS " + key + ":" + base64(hmac-sha1(secret, content));
+                return "OSS " + key;
             }
         };
 
